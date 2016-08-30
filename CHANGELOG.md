@@ -1,5 +1,11 @@
 # Superdesk Client Changelog
 
+## [1.1.1] 2016-08-30
+
+### Fixed
+
+- Refresh items after removing tag from search.
+
 ## [1.1] 2016-08-29
 
 ### Added
