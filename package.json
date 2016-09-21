@@ -148,6 +148,6 @@
   },
   "scripts": {
     "test": "grunt ci:travis",
-    "postinstall": "./node_modules/.bin/grunt build"
+    "postinstall": "./node_modules/.bin/grunt build --server 'https://master.dev.superdesk.org/api' --ws 'wss://master.dev.superdesk.org/ws'"
   }
 }
