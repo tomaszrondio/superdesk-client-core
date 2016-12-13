@@ -181,7 +181,6 @@ export default angular.module('superdesk.core.preferences', ['superdesk.core.not
                         return result;
                     }, function(response) {
                         console.error(response);
-                        notify.error(gettext('User preferences could not be saved...'));
                         deferUpdate.reject(response);
                     }).finally(function() {
                         deferUpdate = null;
