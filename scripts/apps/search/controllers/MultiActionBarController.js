@@ -1,10 +1,10 @@
 MultiActionBarController.$inject = [
-    '$rootScope', 'multi', 'multiEdit', 'send', 'remove', 'modal', '$q',
+    '$rootScope', 'multi', 'multiEdit', 'send', 'remove', 'modal', '$q', 'gettext',
     'packages', 'superdesk', 'notify', 'spike', 'authoring', 'privileges', '$location'
 ];
 
 export function MultiActionBarController(
-    $rootScope, multi, multiEdit, send, remove, modal, $q,
+    $rootScope, multi, multiEdit, send, remove, modal, $q, gettext,
     packages, superdesk, notify, spike, authoring, privileges, $location
 ) {
     this.send  = function() {
@@ -84,5 +84,21 @@ export function MultiActionBarController(
                 !_.includes(['ingested', 'spiked', 'killed', 'draft'], item.state);
         });
         return canPackage;
+    };
+
+    /**
+     * Publish all items
+     */
+    this.publish = () => {
+        $q.all(multi.getItems().map((item) => authoring.publish(item, item)))
+            .then((responses) => {
+                let errors = responses.filter((response) => response.status >= 400);
+                if (errors.length) {
+                    notify.error('Some items couldn\'t be published.');
+                } else {
+                    notify.success('All items were published successfully.');
+                    multi.reset();
+                }
+            });
     };
 }
