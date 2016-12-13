@@ -25,9 +25,20 @@ export function ItemAssociationDirective(superdesk, renditions, api, $q, config)
                 return angular.fromJson(event.originalEvent.dataTransfer.getData(dataType));
             }
 
+            /**
+             * Get superdesk type for data transfer if any
+             *
+             * @param {Event} event
+             * @return {string}
+             */
+            function getSuperdeskType(event) {
+                return event.originalEvent.dataTransfer.types.find(name => name.indexOf('application/superdesk') === 0);
+            }
+
             // it should prevent default as long as this is valid image
             elem.on('dragover', function(event) {
-                if (MEDIA_TYPES.indexOf(event.originalEvent.dataTransfer.types[0]) > -1) {
+                let superdeskType = getSuperdeskType(event);
+                if (MEDIA_TYPES.indexOf(superdeskType) > -1) {
                     event.preventDefault();
                     event.stopPropagation();
                 }
@@ -37,7 +48,7 @@ export function ItemAssociationDirective(superdesk, renditions, api, $q, config)
             elem.on('drop dragdrop', function(event) {
                 event.preventDefault();
                 event.stopPropagation();
-                var item = getItem(event, event.originalEvent.dataTransfer.types[0]);
+                var item = getItem(event, getSuperdeskType(event));
                 // ingest picture if it comes from an external source (create renditions)
                 if (scope.isEditable()) {
                     scope.loading = true;
