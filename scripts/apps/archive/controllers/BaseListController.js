@@ -8,7 +8,7 @@ export class BaseListController {
         $scope.selected = {};
 
         $scope.fetchNext = from => {
-            var criteria = this.getQuery();
+            var criteria = this.getQuery(null, $scope.repo.archive || false);
             criteria.from = from;
             this.fetchItems({source: criteria}, true);
         };
