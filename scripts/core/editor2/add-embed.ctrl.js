@@ -14,34 +14,18 @@ EMBED_PROVIDERS, $scope, editor, config, $injector, api) {
             // use parameter or toggle
             vm.extended = angular.isDefined(close) ? !close : !vm.extended;
         },
-        /**
-         * Return html code to represent an embedded link
-         *
-         * @param {string} url
-         * @param {string} title
-         * @param {string} description
-         * @param {string} illustration
-         * @return {string} html
-         */
-        linkToHtml: function(url, title, description, illustration) {
-            var html = [
-                '<div class="embed--link">',
-                angular.isDefined(illustration) ?
-                '  <img src="' + illustration + '" class="embed--link__illustration"/>' : '',
-                '  <div class="embed--link__title">',
-                '      <a href="' + url + '" target="_blank">' + title + '</a>',
-                '  </div>',
-                '  <div class="embed--link__description">' + description + '</div>',
-                '</div>'];
-            return html.join('\n');
-        },
-        retrieveEmbed:function() {
+        retrieveEmbed: function() {
             function retrieveEmbedFromUrl() {
                 return embedService.get(vm.input).then(function(data) {
                     var embed = data.html;
                     if (!angular.isDefined(embed)) {
                         if (data.type === 'link') {
-                            embed = vm.linkToHtml(data.url, data.title, data.description, data.thumbnail_url);
+                            embed = editor.generateLinkTag({
+                                url: data.url,
+                                title: data.meta.title,
+                                description: data.meta.description,
+                                illustration: data.thumbnail_url
+                            });
                         } else {
                             embed = editor.generateMediaTag({url: data.url, altText: data.description});
                         }

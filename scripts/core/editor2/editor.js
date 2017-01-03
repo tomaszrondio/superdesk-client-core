@@ -461,6 +461,27 @@ function EditorService(spellcheck, $q, _, renditionsService, utils) {
         return active ? active.textContent : null;
     };
 
+    /**
+     * Return html code to represent an embedded link
+     *
+     * @param {string} url
+     * @param {string} titleg
+     * @param {string} description
+     * @param {string} illustration
+     * @return {string} html
+     */
+    this.generateLinkTag = ({url, title, description, illustration}) => [
+        '<div class="embed--link">',
+        angular.isDefined(illustration) ?
+            '  <img src="' + illustration + '" class="embed--link__illustration"/>' : '',
+        '  <div class="embed--link__title">',
+        '      <a href="' + url + '" target="_blank">' + title + '</a>',
+        '  </div>',
+        angular.isDefined(description) ?
+            '  <div class="embed--link__description">' + description + '</div>' : '',
+        '</div>'
+    ].join('\n');
+
     this.generateMediaTag = function(data) {
         var mediaTypes = {
             'video': function() {
@@ -654,8 +675,8 @@ angular.module('superdesk.apps.editor2', [
             }
         };
     }])
-    .directive('sdTextEditorDropZone', ['editor',
-        function (editor) {
+    .directive('sdTextEditorDropZone', ['embedService', 'EMBED_PROVIDERS', 'editor', '$timeout', '$q',
+        (embedService, EMBED_PROVIDERS, editor, $timeout, $q) => {
             var dragOverClass = 'medium-editor-dragover';
             return {
                 require: '^sdTextEditorBlockText',
@@ -664,23 +685,68 @@ angular.module('superdesk.apps.editor2', [
                     if (scope.sdTextEditorDropZone === 'false') {
                         return;
                     }
-                    var MEDIA_TYPES = ['application/superdesk.item.picture', 'application/superdesk.item.graphic',
-                        'application/superdesk.item.video'];
-                    element.on('drop dragdrop', function(event) {
+
+                    var MEDIA_TYPES = [
+                        'application/superdesk.item.picture',
+                        'application/superdesk.item.graphic',
+                        'application/superdesk.item.video',
+                        'text/html'
+                    ];
+
+                    element.on('drop dragdrop', (event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        var mediaType = event.originalEvent.dataTransfer.types[0];
-                        var item = angular.fromJson(event.originalEvent.dataTransfer.getData(mediaType));
-                        var paragraph = angular.element(event.target);
+                        const mediaType = event.originalEvent.dataTransfer.types[0];
+                        const paragraph = angular.element(event.target);
+                        let item = event.originalEvent.dataTransfer.getData(mediaType);
+
+                        // we want to ensure that the field is empty before inserting something
+                        if (paragraph.text() !== '') {
+                            return false;
+                        }
+                        // remove the UI state
                         paragraph.removeClass(dragOverClass);
-                        if (paragraph.text() === '') {
-                            // select paragraph element in order to know position
-                            ctrl.selectElement(paragraph.get(0));
+                        // select paragraph element in order to register position
+                        ctrl.selectElement(paragraph.get(0));
+                        // assume this is an item in json format when it comes from superdesk
+                        if (mediaType.indexOf('application/superdesk') === 0) {
+                            item = angular.fromJson(item);
+                            // insert the item
                             ctrl.insertMedia(item);
+                        } else if (mediaType === 'text/html' && typeof item === 'string') {
+                            $q.when((() => {
+                                // if it's a link (<a>...</a>), create an embed by using iframely
+                                // if not, create an embed based on the item content
+                                const urlMatch = /^<a href="(.+?)".+<\/a>$/.exec(item);
+
+                                if (urlMatch) {
+                                    return embedService.get(urlMatch[1]).then((data) => ({
+                                        blockType: 'embed',
+                                        embedType: data.provider_name || EMBED_PROVIDERS.custom,
+                                        body: data.html || editor.generateLinkTag({
+                                            url: data.url,
+                                            title: data.meta.title,
+                                            description: data.meta.description,
+                                            illustration: data.thumbnail_url,
+                                        }),
+                                    }));
+                                }
+                                return {
+                                    blockType: 'embed',
+                                    embedType: EMBED_PROVIDERS.custom,
+                                    body: item,
+                                };
+                            })())
+                            // split the current block and insert the new block, then commit changes
+                            .then((block) => {
+                                ctrl.sdEditorCtrl.splitAndInsert(ctrl, block)
+                                .then(() => $timeout(ctrl.sdEditorCtrl.commitChanges));
+                            });
                         }
                     })
-                    .on('dragover', function(event) {
-                        var paragraph = angular.element(event.target);
+                    .on('dragover', (event) => {
+                        const paragraph = angular.element(event.target);
+
                         if (MEDIA_TYPES.indexOf(event.originalEvent.dataTransfer.types[0]) > -1) {
                             // allow to overwite the drop binder (see above)
                             event.preventDefault();
@@ -693,15 +759,15 @@ angular.module('superdesk.apps.editor2', [
                         // otherwise, remove the style
                         paragraph.removeClass(dragOverClass);
                     })
-                    .on('dragleave', function(event) {
-                        var paragraph = angular.element(event.target);
+                    .on('dragleave', (event) => {
+                        const paragraph = angular.element(event.target);
+
                         paragraph.removeClass(dragOverClass);
                     });
                 }
             };
-        }
-    ])
-    .directive('sdTextEditor', ['$timeout', 'lodash', function ($timeout, _) {
+        }])
+    .directive('sdTextEditor', ['$timeout', 'lodash', function($timeout, _) {
         return {
             scope: {type: '=', config: '=', editorformat: '=', language: '=', associations: '=?'},
             require: ['sdTextEditor', 'ngModel'],

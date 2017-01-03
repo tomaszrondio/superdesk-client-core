@@ -7,10 +7,7 @@ module.exports = function(grunt) {
         options: config,
         build: {
             plugins: config.plugins.concat(
-                new webpack.DefinePlugin({
-                    'process.env': {'NODE_ENV': JSON.stringify('production')}
-                }),
-                new webpack.optimize.DedupePlugin(),
+                new webpack.DefinePlugin({'process.env': {'NODE_ENV': JSON.stringify('production')}}),
                 new webpack.optimize.UglifyJsPlugin()
             )
         }
