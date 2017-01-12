@@ -32,7 +32,7 @@ export function ItemAssociationDirective(superdesk, renditions, api, $q, config)
              * @return {string}
              */
             function getSuperdeskType(event) {
-                return event.originalEvent.dataTransfer.types.find(name => name.indexOf('application/superdesk') === 0);
+                return event.originalEvent.dataTransfer.types.find((name) => name.indexOf('application/superdesk') === 0);
             }
 
             // it should prevent default as long as this is valid image
