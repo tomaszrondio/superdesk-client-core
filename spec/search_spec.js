@@ -111,7 +111,8 @@ describe('search', function() {
 
         //initialize for search by from desk field and company
         monitoring.openMonitoring();
-        monitoring.switchToDesk('SPORTS DESK').then(authoring.createTextItem());
+        monitoring.selectDesk('SPORTS DESK');
+        authoring.createTextItem();
         authoring.writeTextToHeadline('From-Sports-To-Politics');
         authoring.writeText('This is Body');
         authoring.writeTextToAbstract('This is Abstract');
