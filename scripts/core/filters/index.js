@@ -164,7 +164,7 @@ export default angular.module('superdesk.core.filters', [])
         return daysInCurrMonth;
     })
     .filter('parseDateline', () => function(dateToFormat, located) {
-        var momentizedTimestamp = moment.utc(dateToFormat);
+        var momentizedTimestamp = dateToFormat ? moment.utc(dateToFormat) : moment.utc();
 
         if (angular.isDefined(located) && located.tz !== 'UTC') {
             momentizedTimestamp = momentizedTimestamp.tz(located.tz);
