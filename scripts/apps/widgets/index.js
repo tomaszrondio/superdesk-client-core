@@ -56,7 +56,6 @@ function AnsaRelatedCtrl($scope, api) {
         let filters = [];
         let semantics = $scope.item.semantics;
         let keys = ['persons', 'organizations'];
-        let lower = (val) => val.toLowerCase();
         let namespace = (key) => 'semantics.' + key;
 
         keys.forEach((key) => {
@@ -72,10 +71,9 @@ function AnsaRelatedCtrl($scope, api) {
 
         let query = {
             bool: {
-                must: {terms: {'semantics.iptcCodes': semantics.iptcCodes.map(lower)}},
+                must: {terms: {'semantics.iptcCodes': semantics.iptcCodes}},
                 must_not: {term: {_id: $scope.item.guid}},
-                should: filters,
-                minimum_should_match: Math.max(1, Math.floor(filters.length / 2))
+                should: filters
             }
         };
 
