@@ -45,8 +45,11 @@ function AnsaSemanticsCtrl($scope, api) {
     init();
 }
 
-AnsaRelatedCtrl.$inject = ['$scope', 'api'];
-function AnsaRelatedCtrl($scope, api) {
+AnsaRelatedCtrl.$inject = ['$scope', '$sce', 'api'];
+function AnsaRelatedCtrl($scope, $sce, api) {
+
+    this.content = (html) => $sce.trustAsHtml(html);
+
     let init = () => {
         if (!$scope.item.semantics || !$scope.item.semantics.iptcCodes) {
             this.items = [];
@@ -63,8 +66,10 @@ function AnsaRelatedCtrl($scope, api) {
                 semantics[key].forEach((val) => {
                     let f = {};
 
-                    f[namespace(key)] = val;
-                    filters.push({term: f});
+                    if (val !== 'ANSA') {
+                        f[namespace(key)] = val;
+                        filters.push({match: f});
+                    }
                 });
             }
         });
@@ -77,7 +82,7 @@ function AnsaRelatedCtrl($scope, api) {
             }
         };
 
-        api.query('archive', {source: {query: query, sort: ['_score']}}).then((response) => {
+        api.query('archive', {source: {query: query, sort: ['_score'], size: 50}}).then((response) => {
             this.items = response._items;
         }, (reason) => {
             this.items = [];
