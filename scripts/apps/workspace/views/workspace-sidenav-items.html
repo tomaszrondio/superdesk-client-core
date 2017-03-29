@@ -32,7 +32,9 @@
         <i class="big-icon-chevron-left helper-icon"></i>
     </a>
 </li>
-<li ng-class="{active: currentRoute.href === '/workspace/content'}" ng-if="workspaceConfig.content && privileges.archive">
+<li ng-class="{active: currentRoute.href === '/workspace/content'}"
+  ng-if="workspaceConfig.content && privileges.archive"
+  ng-click="hideMonitoring(currentRoute.href === '/workspace/content', $event)">
     <a href="#/workspace/content" title="{{ :: 'Content' | translate }}">
       <i class="big-icon-archive main-icon"></i>
       <i class="big-icon-chevron-left helper-icon"></i>
@@ -87,5 +89,6 @@
 <li ng-if="workspaceConfig.ingest && privileges.ingest"
     ng-class="{active: currentRoute.href === '/workspace/ingest'}">
     <a href="#/workspace/ingest" class="big-icon-ingest"
-       title="{{ :: 'Ingest' | translate }}"></a>
+      ng-click="hideMonitoring(currentRoute.href === '/workspace/ingest', $event)"
+      title="{{ :: 'Ingest' | translate }}"></a>
 </li>
