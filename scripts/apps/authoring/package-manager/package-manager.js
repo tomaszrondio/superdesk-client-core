@@ -22,7 +22,8 @@ function PackageManagerCtrl($scope, api, search, packages, notify, gettext, auth
             {not: {term: {state: 'spiked'}}},
             {not: {terms: {guid: linkedPackages}}},
             {term: {type: 'composite'}},
-            {not: {term: {state: 'killed'}}}
+            {not: {term: {state: 'killed'}}},
+            {range: {versioncreated: {gte: 'now-24h'}}}
         ];
 
         query.size(25).filter(filter);
