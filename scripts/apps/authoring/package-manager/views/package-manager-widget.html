@@ -7,7 +7,7 @@
                ng-model="query"
                tabindex="1">
     </div>
-    <div class="package-manager-content">
+    <div class="package-manager-content" sd-loading="ctrl.loading">
         <ul class="ingest-list relatead-item-list list-view">
             <li class="list-item-view" ng-repeat="pitem in contentItems | filter: query track by pitem._id" ng-if="pitem._id !== item._id" title="{{ pitem.headline || pitem.slugline}}">
                 <div class="basic item-block">

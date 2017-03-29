@@ -1,14 +1,18 @@
 PackageManagerCtrl.$inject = ['$scope', 'api', 'search', 'packages', 'notify', 'gettext', 'authoring'];
 function PackageManagerCtrl($scope, api, search, packages, notify, gettext, authoring) {
+    let self = this;
+
     $scope.contentItems = [];
     $scope.packageModal = false;
     $scope.groupList = packages.groupList;
 
     function fetchPackages() {
+        self.loading = true;
+
         var query = search.query();
+        var linkedPackages = [];
 
         query.clear_filters();
-        var linkedPackages = [];
 
         _.forEach($scope.item.linked_in_packages, (packageRef) => {
             linkedPackages.push(packageRef.package);
@@ -28,6 +32,9 @@ function PackageManagerCtrl($scope, api, search, packages, notify, gettext, auth
         api.query('search', criteria)
         .then((result) => {
             $scope.contentItems = _.uniqBy(result._items, '_id');
+        })
+        .finally(() => {
+            self.loading = false;
         });
     }
 
@@ -49,6 +56,7 @@ function PackageManagerCtrl($scope, api, search, packages, notify, gettext, auth
         };
 
         var onError = function(error) {
+            this.loading = false;
             if (angular.isDefined(error.data._message)) {
                 notify.error(error.data._message);
             } else {
@@ -56,9 +64,12 @@ function PackageManagerCtrl($scope, api, search, packages, notify, gettext, auth
             }
         };
 
+        this.loading = true;
+
         if (pitem.state === 'published' || pitem.state === 'corrected') {
             return addToPublishedPackage(pitem, group, onSuccess, onError);
         }
+
         return addToUnpublishedPackage(pitem, group, onSuccess, onError);
     };
 
