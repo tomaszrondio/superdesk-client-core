@@ -12,7 +12,7 @@
             <li class="list-item-view" ng-repeat="pitem in contentItems | filter: query track by pitem._id" ng-if="pitem._id !== item._id" title="{{ pitem.headline || pitem.slugline}}">
                 <div class="basic item-block">
                     <i class="filetype-icon-composite"></i>
-                    <div class="content">
+                    <div class="content" ng-click="showPreview = !showPreview">
                         <span class="headline" ng-show="pitem.headline || pitem.slugline">
                             {{ pitem.headline || pitem.slugline | uppercase}}
                         </span>
@@ -27,6 +27,7 @@
                         </ul>
                     </div>
                 </div>
+                <div sd-package class="pull-left" data-item="pitem" ng-show="showPreview"></div>
             </li>
         </ul>
     </div>

@@ -1,6 +1,6 @@
 // http://docs.python-cerberus.org/en/stable/usage.html
 export const DEFAULT_SCHEMA = Object.freeze({
-    slugline: {maxlength: 24, type: 'string'},
+    slugline: {maxlength: 80, type: 'string'},
     relatedItems: {},
     genre: {type: 'list'},
     anpa_take_key: {type: 'string'},
@@ -11,9 +11,9 @@ export const DEFAULT_SCHEMA = Object.freeze({
     subject: {type: 'list'},
     company_codes: {type: 'list'},
     ednote: {type: 'string'},
-    headline: {maxlength: 42, type: 'string', required: true},
+    headline: {maxlength: 250, type: 'string', required: true},
     sms: {maxlength: 160, type: 'string'},
-    abstract: {maxlength: 160, type: 'string'},
+    abstract: {maxlength: 500, type: 'string'},
     body_html: {type: 'string'},
     byline: {type: 'string'},
     dateline: {type: 'dict'},
