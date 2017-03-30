@@ -22,17 +22,31 @@ function PackageManagerCtrl($scope, api, search, packages, notify, gettext, auth
             {not: {term: {state: 'spiked'}}},
             {not: {terms: {guid: linkedPackages}}},
             {term: {type: 'composite'}},
-            {not: {term: {state: 'killed'}}},
             {range: {versioncreated: {gte: 'now-24h'}}}
         ];
 
-        query.size(25).filter(filter);
+        query.size(100).filter(filter);
         var criteria = query.getCriteria(true);
+
+        let killed = {};
 
         criteria.repo = 'archive,published';
         api.query('search', criteria)
         .then((result) => {
-            $scope.contentItems = _.uniqBy(result._items, '_id');
+            result._items.forEach((item) => {
+                if (item.state === 'killed') {
+                    killed[item.guid] = true;
+                }
+            });
+
+            $scope.contentItems = result._items.filter((item) => {
+                if (!killed[item.guid]) {
+                    killed[item.guid] = true;
+                    return true;
+                }
+
+                return false;
+            });
         })
         .finally(() => {
             self.loading = false;

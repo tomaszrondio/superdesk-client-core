@@ -331,6 +331,10 @@ $search-widget-preview-width: 440px;
     .stage-header__number, 
     .stage-header__notification {
         margin: 0 0 0 4px;
+
+        .dropdown__menu a b {
+            white-space: normal;
+        }
     }
     .stage-header__number  {
         margin-top:3px;
