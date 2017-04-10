@@ -94,7 +94,7 @@
     "medium-editor-tables": "0.5.2",
     "ment.io": "^0.9.23",
     "moment": "2.10.6",
-    "moment-timezone": "^0.5.5",
+    "moment-timezone": "0.5.11",
     "ng-file-upload": "^11.2.3",
     "node-sass": "^3.10.1",
     "rangy": "^1.3.0",
@@ -135,7 +135,7 @@
     "test": "grunt ci:travis"
   },
   "engines": {
-    "node": ">=6.6.0,<7",
-    "npm": ">=3.10,<4"
+    "node": ">=6.6.0 <7.0.0",
+    "npm": ">=3.10 <4.0.0"
   }
 }
