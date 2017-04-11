@@ -1,5 +1,5 @@
-PackageManagerCtrl.$inject = ['$scope', 'api', 'search', 'packages', 'notify', 'gettext', 'authoring'];
-function PackageManagerCtrl($scope, api, search, packages, notify, gettext, authoring) {
+PackageManagerCtrl.$inject = ['$scope', 'api', 'search', 'packages', 'notify', 'gettext', 'authoring', 'lodash'];
+function PackageManagerCtrl($scope, api, search, packages, notify, gettext, authoring, _) {
     let self = this;
 
     $scope.contentItems = [];
@@ -33,13 +33,23 @@ function PackageManagerCtrl($scope, api, search, packages, notify, gettext, auth
         criteria.repo = 'archive,published';
         api.query('search', criteria)
         .then((result) => {
-            result._items.forEach((item) => {
+            let items = result._items.sort((a, b) => {
+                if (a.versioncreated > b.versioncreated) {
+                    return -1;
+                } else if (a.versioncreated < b.versioncreated) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            items.forEach((item) => {
                 if (item.state === 'killed') {
                     killed[item.guid] = true;
                 }
             });
 
-            $scope.contentItems = result._items.filter((item) => {
+            $scope.contentItems = items.filter((item) => {
                 if (!killed[item.guid]) {
                     killed[item.guid] = true;
                     return true;
