@@ -1,5 +1,5 @@
-UserNotificationsService.$inject = ['$rootScope', '$timeout', 'api', 'session', 'SESSION_EVENTS'];
-function UserNotificationsService($rootScope, $timeout, api, session, SESSION_EVENTS) {
+UserNotificationsService.$inject = ['$rootScope', '$timeout', 'api', 'session', 'SESSION_EVENTS', 'sdActivityMessage'];
+function UserNotificationsService($rootScope, $timeout, api, session, SESSION_EVENTS, sdActivityMessage) {
     var UPDATE_TIMEOUT = 500;
 
     this._items = null;
@@ -90,6 +90,17 @@ function UserNotificationsService($rootScope, $timeout, api, session, SESSION_EV
         return session.identity && getFilteredRecipients(dest, session.identity._id);
     }
 
+    // ask for permission and send a desktop notificiation
+    function sendDesktopNotification(msg) {
+        if ('Notification' in window && Notification.permission !== 'denied') {
+            Notification.requestPermission((permission) => {
+                if (permission === 'granted') {
+                    new Notification(msg);
+                }
+            });
+        }
+    }
+
     this.reload();
     session.getIdentity().then(() => {
         $rootScope.$on('user:mention', (_e, extras) => {
@@ -101,6 +112,9 @@ function UserNotificationsService($rootScope, $timeout, api, session, SESSION_EV
         $rootScope.$on('activity', (_e, extras) => {
             if (isCurrentUser(extras)) {
                 $timeout(this.reload, UPDATE_TIMEOUT, false);
+                sendDesktopNotification(
+                    sdActivityMessage.format(extras.activity)
+                );
             }
         });
     });
@@ -230,7 +244,8 @@ angular.module('superdesk.core.menu.notifications', ['superdesk.core.services.as
     .service('deskNotifications', DeskNotificationsService)
     .directive('sdMarkAsRead', MarkAsReadDirective)
 
-    .directive('sdNotifications', ['asset', 'authoringWorkspace', function(asset, authoringWorkspace) {
+    .directive('sdNotifications',
+    ['asset', 'authoringWorkspace', '$rootScope', function(asset, authoringWorkspace, $rootScope) {
         return {
             require: '^sdSuperdeskView',
             templateUrl: asset.templateUrl('core/menu/notifications/views/notifications.html'),
@@ -240,6 +255,10 @@ angular.module('superdesk.core.menu.notifications', ['superdesk.core.services.as
                 scope.openArticle = function(notification) {
                     ctrl.flags.notifications = !ctrl.flags.notifications;
                     authoringWorkspace.edit({_id: notification.item}, 'edit');
+                };
+
+                scope.onNotificationClick = function(notification) {
+                    $rootScope.$broadcast('notification:click', {notification});
                 };
             }
         };
